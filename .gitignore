@@ -1,0 +1,8 @@
+# Supabase CLI local state
+supabase/.temp/
+
+# Claude Code local settings
+.claude/
+
+# OS
+.DS_Store

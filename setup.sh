@@ -72,7 +72,7 @@ CREATE_OUT=$(supabase projects create "$PROJECT_NAME" \
   --region "$REGION" \
   --db-password "$DB_PASSWORD" \
   --output json 2>&1) || true
-PROJECT_REF=$(echo "$CREATE_OUT" | python3 -c "import sys,json; data=sys.stdin.read(); print(json.loads(data)['id'])" 2>/dev/null || true)
+PROJECT_REF=$(echo "$CREATE_OUT" | python3 -c "import sys,json; data=sys.stdin.read(); s=data.find('{'); print(json.loads(data[s:data.rfind('}')+1])['id'])" 2>/dev/null || true)
 if [[ -z "$PROJECT_REF" ]]; then
   echo "Error: failed to create project. Output from supabase CLI:"
   echo "$CREATE_OUT"

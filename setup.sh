@@ -15,7 +15,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Defaults
-PROJECT_NAME="mcp-eval-sandbox"
+PROJECT_NAME="mcp-eval-sandbox-$(openssl rand -hex 3)"
 REGION="us-east-1"
 ORG_ID=""
 DB_PASSWORD=""
@@ -67,11 +67,17 @@ echo "Creating project '$PROJECT_NAME' in org '$ORG_ID' (region: $REGION)..."
 echo ""
 
 # 1. Create project
-PROJECT_REF=$(supabase projects create "$PROJECT_NAME" \
+CREATE_OUT=$(supabase projects create "$PROJECT_NAME" \
   --org-id "$ORG_ID" \
   --region "$REGION" \
   --db-password "$DB_PASSWORD" \
-  --output json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+  --output json 2>&1) || true
+PROJECT_REF=$(echo "$CREATE_OUT" | python3 -c "import sys,json; data=sys.stdin.read(); print(json.loads(data)['id'])" 2>/dev/null || true)
+if [[ -z "$PROJECT_REF" ]]; then
+  echo "Error: failed to create project. Output from supabase CLI:"
+  echo "$CREATE_OUT"
+  exit 1
+fi
 
 echo "Project created: $PROJECT_REF"
 echo "Waiting for project to be ready..."
